@@ -1,0 +1,16 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Task {
+  id        Int      @unique @default(autoincrement())
+  name      String   @unique @db.VarChar(50)
+  price     Float
+  endDate   DateTime
+  order     Int?  
+}
