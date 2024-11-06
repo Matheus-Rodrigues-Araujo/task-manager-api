@@ -5,9 +5,9 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   app.enableCors({
-    origin: 'https://taskgoalapp.vercel.app',  // Defina o domínio do seu frontend
+    origin: process.env.FRONTEND_URL,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: 'Content-Type, Accept, Authorization',  // Permite headers customizados como Authorization
+    allowedHeaders: 'Content-Type, Accept, Authorization', // Permite headers customizados como Authorization
   });
   await app
     .listen(8000)
