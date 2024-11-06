@@ -4,6 +4,7 @@ import {
   Put,
   Delete,
   Post,
+  Patch,
   Body,
   Param,
   HttpException,
@@ -20,41 +21,13 @@ export class TaskController {
   @Get()
   @HttpCode(HttpStatus.OK)
   async all(): Promise<Task[]> {
-    try {
-      return this.taskService.findAll();
-    } catch (error) {
-      throw new HttpException(
-        { status: HttpStatus.BAD_REQUEST, error: 'Tarefas não encontradas' },
-        HttpStatus.BAD_REQUEST,
-        { cause: error },
-      );
-    }
+    return await this.taskService.findAll();
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async get(@Param('id') id: string): Promise<Task> {
-    try {
-      const task = await this.taskService.get({ id: Number(id) });
-      
-      if (!task) {
-        throw new HttpException(
-          { status: HttpStatus.NOT_FOUND, error: 'Tarefa não encontrada' },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      return task;
-    } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: 'Tarefa não encontrada',
-        },
-        HttpStatus.BAD_REQUEST,
-        { cause: error },
-      );
-    }
+    return await this.taskService.get({ id: Number(id) });
   }
 
   @Post()
@@ -62,18 +35,7 @@ export class TaskController {
   async create(
     @Body() task: { name: string; price: number; endDate: Date },
   ): Promise<Omit<Task, 'order'>> {
-    try {
-      return await this.taskService.create(task);
-    } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: 'Erro ao criar tarefa',
-        },
-        HttpStatus.BAD_REQUEST,
-        { cause: error },
-      );
-    }
+    return await this.taskService.create(task);
   }
 
   @Put(':id')
@@ -82,57 +44,18 @@ export class TaskController {
     @Param('id') id: string,
     @Body() data: { name: string; price: number; endDate: Date },
   ): Promise<Task> {
-    try {
-      const task = await this.taskService.update({ where: { id: Number(id) }, data });
+    return await this.taskService.update({ where: { id: Number(id) }, data });
+  }
 
-      if (!task) {
-        throw new HttpException(
-          {
-            status: HttpStatus.NOT_FOUND,
-            error: 'Tarefa não encontrada',
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      return task;
-    } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: 'Tarefa não atualizada',
-        },
-        HttpStatus.BAD_REQUEST,
-        { cause: error },
-      );
-    }
+  @Patch('order')
+  @HttpCode(HttpStatus.OK)
+  async updateOrder(@Body() tasks: Task[]) {
+    return await this.taskService.updateOrder(tasks);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(@Param('id') id: string): Promise<Task> {
-    try {
-      const task = await this.taskService.delete({ id: Number(id) });
-
-      if (!task) {
-        throw new HttpException(
-          {
-            error: 'Tarefa não encontrada',
-            status: HttpStatus.NOT_FOUND,
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      return task;
-    } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          error: 'Erro ao deletar tarefa',
-        },
-        HttpStatus.BAD_REQUEST,
-        { cause: error },
-      );
-    }
+  async delete(@Param('id') id: string): Promise<void> {
+    await this.taskService.delete({ id: Number(id) });
   }
 }
