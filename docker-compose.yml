@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  taskgoal-api:
+    container_name: taskgoal-api 
+    build: 
+      context: .
+      dockerfile: Dockerfile.production
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.production
+    networks:
+      - task-network
+    volumes:
+      - ./src:/usr/src/app/src
+    depends_on:
+      - db
+  
+  db:
+    image: 'postgres'
+    container_name: db
+    ports:
+      - "5433:5433"
+    environment:
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_DB: 'testdb'
+    volumes:
+      - db_data:/var/lib/postgresql
+volumes:
+  db_data:
+
+networks:
+  task-network:
+    driver: bridge

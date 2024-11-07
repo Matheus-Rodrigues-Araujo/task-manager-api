@@ -1,9 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
-  HttpException,
   InternalServerErrorException,
-  HttpStatus,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -33,29 +31,34 @@ export class TaskService {
 
   async create(data: Prisma.TaskCreateInput): Promise<Omit<Task, 'order'>> {
     if (!data) throw new NotFoundException('Preencha os dados!');
+  
     const nameExists: Task | null = await this.prisma.task.findUnique({
       where: { name: data.name },
     });
-
     if (nameExists) throw new ConflictException('Nome já utilizado!');
-
-    const task = await this.prisma.task.create({ data });
+  
+    const lastTask = await this.prisma.task.findFirst({
+      orderBy: { order: 'desc' },
+    });
+    const nextOrder = (lastTask?.order ?? 0) + 1;
+  
+    const task = await this.prisma.task.create({
+      data: {
+        ...data,
+        order: nextOrder,
+      },
+    });
+    
     if (!task) throw new BadRequestException('Tarefa não foi criada');
     return task;
   }
+
 
   async update(params: {
     where: Prisma.TaskWhereUniqueInput;
     data: Omit<Prisma.TaskUpdateInput, 'order'>;
   }): Promise<Task> {
     const { where, data } = params;
-
-    if (!data) throw new NotFoundException('Preencha os dados!');
-
-    const nameExists: Task | null = await this.prisma.task.findUnique({
-      where: { name: <string>data.name },
-    });
-    if (nameExists) throw new ConflictException('Nome já utilizado!');
 
     const updatedTask = this.prisma.task.update({ data, where });
     if (!updatedTask) throw new BadRequestException('Tarefa não atualizada');
