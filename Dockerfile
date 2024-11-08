@@ -3,6 +3,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
+
 COPY prisma ./prisma/
 
 RUN npm install
@@ -17,4 +18,4 @@ RUN rm -rf ./src
 
 EXPOSE 8000
 
-CMD ["npm", "run", "start:prod"]
+CMD ["sh", "-c", "npx prisma migrate dev && npm run start:prod"]
